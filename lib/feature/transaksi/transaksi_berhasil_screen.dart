@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,12 +18,11 @@ class TransactionSuccessScreen extends StatefulWidget {
   final double totalBill;
   final String? note;
 
-  const TransactionSuccessScreen({
-    super.key,
-    required this.receivedAmount,
-    required this.totalBill,
-    this.note
-  });
+  const TransactionSuccessScreen(
+      {super.key,
+      required this.receivedAmount,
+      required this.totalBill,
+      this.note});
 
   @override
   _TransactionSuccessScreenState createState() =>
@@ -54,24 +55,35 @@ class _TransactionSuccessScreenState extends State<TransactionSuccessScreen> {
       final userId = FirebaseAuth.instance.currentUser?.uid;
 
       final transaction = TransactionModel(
-        id: transactionId, 
-        paymentMethod: paymentMethod, 
-        totalBill: widget.totalBill, 
-        receivedAmount: widget.receivedAmount, 
-        changeAmount: changeAmount, 
+        id: transactionId,
+        paymentMethod: paymentMethod,
+        totalBill: widget.totalBill,
+        receivedAmount: widget.receivedAmount,
+        changeAmount: changeAmount,
         note: widget.note,
         date: DateTime.now(),
-        userId: userId);
+        userId: userId,
+      );
 
-        FirebaseFirestore.instance
-        .collection('transaction')
-        .doc(transactionId)
-        .set(transaction.toMap())
-        .then((_)=>print("Transaksi berhasil disimpan"))
-        .catchError((error)=>print("Transaksi gagal dilakukan:$error"));
+      // Tambah satu array baru di object transaction bernama cartItems berisi array dari cartItems
+      // Gunakan destructuring untuk mengambil cartItems dari transaction
+      final transactionData = transaction.toMap();
+      transactionData['cartItems'] = Provider.of<ProductCartProvider>(context, listen: false)
+          .cartItems
+          .map((cartItem) => cartItem.toMap())
+          .toList();
+      
+      log('Transaction Data: $transactionData');
 
-        Provider.of<TransactionProvider>(context, listen: false)
-        .addTransaction(transaction);
+      FirebaseFirestore.instance
+          .collection('transaction')
+          .doc(transactionId)
+          .set(transactionData)
+          .then((_) => print("Transaksi berhasil disimpan"))
+          .catchError((error) => print("Transaksi gagal dilakukan:$error"));
+
+      Provider.of<TransactionProvider>(context, listen: false)
+          .addTransaction(transaction);
     });
   }
 

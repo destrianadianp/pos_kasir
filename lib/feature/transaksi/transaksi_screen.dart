@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:pos_kasir/feature/pembayaran_tunai/pembayaran_tunai_screen.dart';
+import 'package:pos_kasir/models/cart_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/product_provider.dart';
@@ -22,9 +24,12 @@ class _TransaksiPageState extends State<TransaksiPage> {
   Widget build(BuildContext context) {
     final productCartProvider = Provider.of<ProductCartProvider>(context);
 
-    double totalProductPrice = productCartProvider.cartItems.fold(0.0, (sum, item) {
-      final price = item.product.price ?? 0;
-      final quantity = item.quantity ?? 1;
+    double totalProductPrice = productCartProvider.cartItems.fold(0.0, (
+      sum,
+      item,
+    ) {
+      final price = item.product.price;
+      final quantity = item.quantity;
       return sum + (price * quantity);
     });
 
@@ -69,7 +74,8 @@ class _TransaksiPageState extends State<TransaksiPage> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Harga: Rp${product.price.toStringAsFixed(0)}"),
+                            Text(
+                                "Harga: Rp${product.price.toStringAsFixed(0)}"),
                           ],
                         ),
                         trailing: Row(
@@ -78,14 +84,16 @@ class _TransaksiPageState extends State<TransaksiPage> {
                             IconButton(
                               icon: const Icon(Icons.remove),
                               onPressed: () {
-                                productCartProvider.minusQuantity(product.productId);
+                                productCartProvider
+                                    .minusQuantity(product.productId);
                               },
                             ),
                             Text("${cartItem.quantity}"),
                             IconButton(
                               icon: const Icon(Icons.add),
                               onPressed: () {
-                                productCartProvider.addQuantity(product.productId);
+                                productCartProvider
+                                    .addQuantity(product.productId);
                               },
                             ),
                           ],
@@ -142,8 +150,14 @@ class _TransaksiPageState extends State<TransaksiPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Total Pembayaran:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('Rp ${totalPayment.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Total Pembayaran:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Rp ${totalPayment.toStringAsFixed(0)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -155,8 +169,8 @@ class _TransaksiPageState extends State<TransaksiPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => PembayaranTunaiScreen(
-                        totalPayment: totalPayment,
-                        note: isSwitchOn?catatanController.text:null),
+                          totalPayment: totalPayment,
+                          note: isSwitchOn ? catatanController.text : null),
                     ),
                   );
                 },
@@ -164,7 +178,8 @@ class _TransaksiPageState extends State<TransaksiPage> {
               const Divider(),
               ListTile(
                 title: const Text("Pembayaran online"),
-                subtitle: const Text("Terima pembayaran melalui virtual account dan e-wallet"),
+                subtitle: const Text(
+                    "Terima pembayaran melalui virtual account dan e-wallet"),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {},
               ),

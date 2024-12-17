@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_kasir/feature/kelola_produk/kelola_produk_screen.dart';
@@ -28,56 +29,82 @@ class DrawerMenu extends StatelessWidget {
             child: Row(
               children: [
                 // Menampilkan gambar profil jika ada
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: currentUser?.photoURL != null
-                      ? NetworkImage(currentUser!.photoURL!)
-                      : AssetImage('assets/images/profile.jpg') as ImageProvider,
-                ),
+                FutureBuilder(
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(currentUser?.uid)
+                        .get(),
+                    builder: (context, snapshot) {
+                      return CircleAvatar(
+                        radius: 30,
+                        backgroundImage: currentUser?.photoURL != null
+                            ? NetworkImage(currentUser!.photoURL!)
+                            // : AssetImage('assets/images/profile.jpg') as ImageProvider,
+                            : snapshot.hasData
+                                ? NetworkImage(snapshot.data!['imageUrl'])
+                                : const AssetImage('assets/images/profile.jpg')
+                                    as ImageProvider,
+                      );
+                    }),
                 const SizedBox(width: 16.0),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      FutureBuilder(
+                          future: FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(currentUser?.uid)
+                              .get(),
+                          builder: (context, snapshot) {
+                            return Text(
+                              // currentUser?.displayName ?? 'Nama Tidak Tersedia',  // Menampilkan nama pengguna
+                              snapshot.hasData
+                                  ? snapshot.data!['userName']
+                                  : 'Nama Tidak Tersedia',
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            );
+                          }),
                       Text(
-                        currentUser?.displayName ?? 'Nama Tidak Tersedia',  // Menampilkan nama pengguna
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        currentUser?.email ?? 'Email Tidak Tersedia',  // Menampilkan email pengguna
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        currentUser?.email ??
+                            'Email Tidak Tersedia', // Menampilkan email pengguna
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
                 ),
-               GestureDetector(
-  child: const Icon(Icons.chevron_right),
-  onTap: () {
-    if (currentUser != null) {
-      // Konversi User (Firebase) ke UserModel
-      UserModel userModel = UserModel(
-        id: currentUser.uid,
-        email: currentUser.email,
-        userName: currentUser.displayName ?? 'Nama Tidak Tersedia',
-      );
+                GestureDetector(
+                  child: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    if (currentUser != null) {
+                      // Konversi User (Firebase) ke UserModel
+                      UserModel userModel = UserModel(
+                        id: currentUser.uid,
+                        email: currentUser.email,
+                        userName:
+                            currentUser.displayName ?? 'Nama Tidak Tersedia',
+                      );
 
-      // Navigasi ke EditProfileScreen dengan userModel
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EditProfileScreen(user: userModel),
-        ),
-      );
-    } else {
-      // Tampilkan pesan error jika pengguna tidak ditemukan
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pengguna tidak ditemukan")),
-      );
-    }
-  },
-),
-
+                      // Navigasi ke EditProfileScreen dengan userModel
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditProfileScreen(user: userModel),
+                        ),
+                      );
+                    } else {
+                      // Tampilkan pesan error jika pengguna tidak ditemukan
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Pengguna tidak ditemukan")),
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -107,7 +134,8 @@ class DrawerMenu extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => RiwayatTransaksiScreen()),
+                MaterialPageRoute(
+                    builder: (context) => RiwayatTransaksiScreen()),
               );
             },
           ),
@@ -130,7 +158,8 @@ class DrawerMenu extends StatelessWidget {
             onPressed: () {
               _showDeleteAccountDialog(context);
             },
-            child: const Text("Hapus Akun", style: TextStyle(color: Colors.red)),
+            child:
+                const Text("Hapus Akun", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

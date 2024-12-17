@@ -1,4 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_kasir/feature/kelola_produk/kelola_produk_screen.dart';
 import 'package:pos_kasir/feature/tambah_produk/widgets/image_picker.dart';
@@ -25,7 +28,6 @@ class _TambahProdukState extends State<TambahProduk> {
   String dropdownValue = '';
   String? base64Image;
 
-
   @override
   Widget build(BuildContext context) {
     final categoryProvider = Provider.of<CategoryProvider>(context);
@@ -34,7 +36,9 @@ class _TambahProdukState extends State<TambahProduk> {
     final kategoriList = categoryProvider.categories;
 
     if (kategoriList.isEmpty) {
-      return Center(child: CircularProgressIndicator(),);
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
     return Scaffold(
@@ -48,13 +52,14 @@ class _TambahProdukState extends State<TambahProduk> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ImagePickerWidget(
-              onImagePicked: (base64){
-                setState(() {
-                  base64Image = base64;
-                });
-              }),
-                SizedBox(height: space300,),
+                ImagePickerWidget(onImagePicked: (base64) {
+                  setState(() {
+                    base64Image = base64;
+                  });
+                }),
+                SizedBox(
+                  height: space300,
+                ),
                 CustomTextFormField(
                   controller: _namaProdukController,
                   placeholder: 'Nama Barang',
@@ -66,15 +71,15 @@ class _TambahProdukState extends State<TambahProduk> {
                 ),
                 CustomTextFormField(
                   controller: _stokController,
-                  keyboardType: TextInputType.number,                  
+                  keyboardType: TextInputType.number,
                   placeholder: 'Stok',
                 ),
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
-                    labelText: 'Kategori', 
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(borderRadius100)
-                    ) ),
+                      labelText: 'Kategori',
+                      border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(borderRadius100))),
                   value: dropdownValue.isEmpty ? null : dropdownValue,
                   items: kategoriList.map((String value) {
                     return DropdownMenuItem<String>(
@@ -90,40 +95,49 @@ class _TambahProdukState extends State<TambahProduk> {
                 ),
                 const SizedBox(height: space800),
                 CustomButton(
-  onPressed: () async {
-    try {
-      final newProduct = {
-        "productId": DateTime.now().toString(),
-        "productName": _namaProdukController.text,
-        "productImage": base64Image ?? '', // Atur jika menggunakan gambar
-        "price": double.parse(_hargaJualController.text),
-        "stock": int.parse(_stokController.text),
-        "category": dropdownValue,
-      };
+                  onPressed: () async {
+                    // TODO: Bisa diperbaiki agar lebih mudah dibaca
+                    final FirebaseAuth auth = FirebaseAuth.instance;
+                    final String userId = auth.currentUser!.uid;
 
-      // Simpan produk ke Firebase
-      await FirebaseFirestore.instance.collection('products').add(newProduct);
+                    try {
+                      final newProduct = {
+                        "productId": DateTime.now().toString(),
+                        "productName": _namaProdukController.text,
+                        "productImage":
+                            base64Image ?? '', // Atur jika menggunakan gambar
+                        "price": double.parse(_hargaJualController.text),
+                        "stock": int.parse(_stokController.text),
+                        "category": dropdownValue,
+                        "userId": userId,
+                      };
 
-      // Tampilkan notifikasi sukses
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Produk berhasil ditambahkan")),
-      );
+                      // Simpan produk ke Firebase
+                      await FirebaseFirestore.instance
+                          .collection('products')
+                          .add(newProduct);
 
-      // Arahkan kembali ke halaman Kelola Produk
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => KelolaProdukPage()),
-      );
-    } catch (e) {
-      // Tampilkan notifikasi error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Terjadi kesalahan: $e")),
-      );
-    }
-  },
-  child: const Text("Simpan"),
-),
+                      // Tampilkan notifikasi sukses
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Produk berhasil ditambahkan")),
+                      );
 
+                      // Arahkan kembali ke halaman Kelola Produk
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const KelolaProdukPage()),
+                      );
+                    } catch (e) {
+                      // Tampilkan notifikasi error
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Terjadi kesalahan: $e")),
+                      );
+                    }
+                  },
+                  child: const Text("Simpan"),
+                ),
               ],
             ),
           ),

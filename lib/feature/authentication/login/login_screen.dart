@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   @override
-  void dispose(){
+  void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -36,9 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: secondaryColor,
-        automaticallyImplyLeading: false
-      ),
+          backgroundColor: secondaryColor, automaticallyImplyLeading: false),
       backgroundColor: secondaryColor,
       body: SafeArea(
           child: Form(
@@ -66,83 +64,88 @@ class _LoginScreenState extends State<LoginScreen> {
                 return null;
               },
             ),
-            SizedBox(height: spacing1,),
-                ValueListenableBuilder(
-                  valueListenable: _isSeen, 
-                  builder: (context, value, child){
-                    return CustomTextFormField(
-                      backgroundColor: secondaryColor,
-                      maxLines: 1,
-                      obsecureText: !value,
-                      placeholder: 'Masukan Password',
-                      controller: _passwordController,
-                      validator: (e) {
-                        if (e.length<8) {
-                          return "Kata sandi minimal terdiri dari 8 karakter";
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        onPressed: (){
-                          _isSeen.value = !_isSeen.value;
-                      }, 
-                      icon: SvgPicture.asset(value ? 'assets/images/ic_eye_slash.svg': 'assets/images/ic_eye_closed.svg',color: iconNeutralPrimary,), 
-                      ),
-                    );
-                  }
-                ),
-                SizedBox(height: spacing5,),
-
-
-                BlocConsumer<AuthenticationBloc, AuthenticationState>(
-                  builder: (context, state){
-                    return CustomButton(
-                  child: Text("Login", style: mBold.copyWith(color: secondaryColor),),
-                  onPressed: (){
-                    BlocProvider.of<AuthenticationBloc>(context).add(
-                      LoginUser(
-                        email: _emailController.text.trim(), 
-                        password: _passwordController.text.trim()));
-                  }
-                );
-                  },
-                  listener: (context, state){
-                    if (state is AuthenticationSuccessState) {
-                      Navigator.pushAndRemoveUntil(
-                      context, 
-                      MaterialPageRoute(builder: (context)=>KelolaProdukPage()), 
-                      (route)=>false);
-                    }
-                    else if(state is AuthenticationFailureState){
-                      showDialog(
-                        context: context, 
-                        builder: (context){
-                          return AlertDialog(
-                            content: Text("Login failed. Please try again")
-                          );
-                        });
-                    }
-                  }),
-                
-
-                Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Don't have an account?",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>RegisterScreen()));
+            SizedBox(
+              height: spacing1,
+            ),
+            ValueListenableBuilder(
+                valueListenable: _isSeen,
+                builder: (context, value, child) {
+                  return CustomTextFormField(
+                    backgroundColor: secondaryColor,
+                    maxLines: 1,
+                    obsecureText: !value,
+                    placeholder: 'Masukan Password',
+                    controller: _passwordController,
+                    validator: (e) {
+                      if (e.length < 8) {
+                        return "Kata sandi minimal terdiri dari 8 karakter";
+                      }
+                      return null;
                     },
-                    child: Text(
-                      "Sign Up",
-                      style: smMedium.copyWith(color: primaryColor),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _isSeen.value = !_isSeen.value;
+                      },
+                      icon: SvgPicture.asset(
+                        value
+                            ? 'assets/images/ic_eye_slash.svg'
+                            : 'assets/images/ic_eye_closed.svg',
+                        color: iconNeutralPrimary,
+                      ),
                     ),
+                  );
+                }),
+            SizedBox(
+              height: spacing5,
+            ),
+            BlocConsumer<AuthenticationBloc, AuthenticationState>(
+                builder: (context, state) {
+              return CustomButton(
+                  child: Text(
+                    "Login",
+                    style: mBold.copyWith(color: secondaryColor),
                   ),
-                ],
-              ),
+                  onPressed: () {
+                    BlocProvider.of<AuthenticationBloc>(context).add(LoginUser(
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim()));
+                  });
+            }, listener: (context, state) {
+              if (state is AuthenticationSuccessState) {
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => KelolaProdukPage()),
+                    (route) => false);
+              } else if (state is AuthenticationFailureState) {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                          content: Text("Login failed. Please try again"));
+                    });
+              }
+            }),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Don't have an account?",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => RegisterScreen()));
+                  },
+                  child: Text(
+                    "Sign Up",
+                    style: smMedium.copyWith(color: primaryColor),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ))),

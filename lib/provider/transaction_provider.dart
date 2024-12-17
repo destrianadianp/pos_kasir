@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -12,9 +14,8 @@ class TransactionProvider with ChangeNotifier {
   Future<void> fetchTransaction(String userId) async {
     try {
       final snapshot = await _firestore
-      .collection('users')
-      .doc(userId)
-      .collection('transactions')
+      .collection('transaction')
+      .where('userId', isEqualTo: userId)
       .get();
       _transactions.clear();
       _transactions.addAll(

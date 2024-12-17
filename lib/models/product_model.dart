@@ -36,7 +36,7 @@ class ProductModel {
       price: map['price'],
       stock: map['stock'],
       category: map['category'],
-      userId: map['userId']
+      userId: map['userId'] ?? ''
     );
   }
 }

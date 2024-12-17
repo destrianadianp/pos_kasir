@@ -27,18 +27,21 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-     WidgetsBinding.instance.addPostFrameCallback((_) async {
-    // Dapatkan user saat ini dari Firebase Authentication
-    User? user = FirebaseAuth.instance.currentUser;
+    Provider.of<ProductCartProvider>(context, listen: false).fetchProducts(
+      FirebaseAuth.instance.currentUser!.uid,
+    );
+    /*WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Dapatkan user saat ini dari Firebase Authentication
+      User? user = FirebaseAuth.instance.currentUser;
 
-    if (user != null) {
-      String userId = user.uid; // Ambil uid dari user
-      Provider.of<CategoryProvider>(context, listen: false)
-          .fetchCategories(userId); // Kirim uid ke fetchCategories
-    } else {
-      print('User belum login');
-    }
-  });
+      if (user != null) {
+        String userId = user.uid; // Ambil uid dari user
+        Provider.of<CategoryProvider>(context, listen: false)
+            .fetchCategories(userId); // Kirim uid ke fetchCategories
+      } else {
+        print('User belum login');
+      }
+    }); */
   }
 
   @override
@@ -108,58 +111,58 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
   }
 }
 
+/// Fungsi untuk menampilkan dialog tambah kategori
+void _showAddCategoryDialog(
+    BuildContext context, CategoryProvider categoryProvider) {
+  TextEditingController controller = TextEditingController();
 
-  /// Fungsi untuk menampilkan dialog tambah kategori
-  void _showAddCategoryDialog(BuildContext context, CategoryProvider categoryProvider) {
-    TextEditingController controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: const EdgeInsets.all(16.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'Nama kategori baru',
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        contentPadding: const EdgeInsets.all(16.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Nama kategori baru',
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal'),
                 ),
-              ),
-              const SizedBox(height: 16.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Batal'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor
-                    ),
-                    onPressed: () async {
-                      if (controller.text.isNotEmpty) {
-                        User? user = FirebaseAuth.instance.currentUser;
+                ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: primaryColor),
+                  onPressed: () async {
+                    if (controller.text.isNotEmpty) {
+                      User? user = FirebaseAuth.instance.currentUser;
 
-                        if (user != null) {
-                          String userId = user.uid;
-                          await categoryProvider.addCategory(userId, controller.text);
-                        }
+                      if (user != null) {
+                        String userId = user.uid;
+                        await categoryProvider.addCategory(
+                            userId, controller.text);
                       }
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Simpan'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Simpan'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}

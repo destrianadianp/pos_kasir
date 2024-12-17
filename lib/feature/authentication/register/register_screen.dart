@@ -21,13 +21,13 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-   final _isSeen = ValueNotifier(false);
+  final _isSeen = ValueNotifier(false);
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
-  void dispose(){
+  void dispose() {
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -75,85 +75,87 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 return null;
               },
             ),
-            SizedBox(height: spacing1,),
-                ValueListenableBuilder(
-                  valueListenable: _isSeen, 
-                  builder: (context, value, child){
-                    return CustomTextFormField(
-                      backgroundColor: secondaryColor,
-                      maxLines: 1,
-                      obsecureText: !value,
-                      placeholder: 'Masukan Password',
-                      controller: _passwordController,
-                      validator: (e) {
-                        if (e.length<8) {
-                          return "Kata sandi minimal terdiri dari 8 karakter";
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        onPressed: (){
-                          _isSeen.value = !_isSeen.value;
-                      }, 
-                      icon: SvgPicture.asset(value ? 'assets/images/ic_eye_slash.svg': 'assets/images/ic_eye_closed.svg',color: iconNeutralPrimary,), 
-                      ),
-                    );
-                  }
-                ),
-                SizedBox(height: spacing5,),
-
-                //menghubungkan ke firebase
-                BlocConsumer<AuthenticationBloc, AuthenticationState>(
-                  builder: (context, state){
-                    return CustomButton(
-                  child: Text("Sign Up",style: mBold.copyWith(color: secondaryColor)),
-                  onPressed: (){
-                    BlocProvider.of<AuthenticationBloc>(context).add(
-                      SignUpUser(
-                        userName: _usernameController.text.trim(), 
-                        email: _emailController.text.trim(), 
-                        password: _passwordController.text.trim()));
-                  }
-                );
-                  }, 
-                  
-                  listener: (context,state){
-                    if (state is AuthenticationSuccessState) {
-                      Navigator.pushAndRemoveUntil(
-                        context, 
-                        MaterialPageRoute(builder: (context)=>LoginScreen()), 
-                        (route)=>false);
-                    }
-                    else if(state is AuthenticationFailureState){
-                      showDialog(
-                        context: context, 
-                        builder: (context){
-                          return AlertDialog(
-                            content: Text("Error during Sign Up"),
-                          );
-                        });
-                    }
-                  }),
-                
-
-                Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Already have an account?",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+            SizedBox(
+              height: spacing1,
+            ),
+            ValueListenableBuilder(
+                valueListenable: _isSeen,
+                builder: (context, value, child) {
+                  return CustomTextFormField(
+                    backgroundColor: secondaryColor,
+                    maxLines: 1,
+                    obsecureText: !value,
+                    placeholder: 'Masukan Password',
+                    controller: _passwordController,
+                    validator: (e) {
+                      if (e.length < 8) {
+                        return "Kata sandi minimal terdiri dari 8 karakter";
+                      }
+                      return null;
                     },
-                    child: Text(
-                      "Sign In",
-                      style: smMedium.copyWith(color: primaryColor)
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _isSeen.value = !_isSeen.value;
+                      },
+                      icon: SvgPicture.asset(
+                        value
+                            ? 'assets/images/ic_eye_slash.svg'
+                            : 'assets/images/ic_eye_closed.svg',
+                        color: iconNeutralPrimary,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  );
+                }),
+            SizedBox(
+              height: spacing5,
+            ),
+
+            //menghubungkan ke firebase
+            BlocConsumer<AuthenticationBloc, AuthenticationState>(
+                builder: (context, state) {
+              return CustomButton(
+                  child: Text("Sign Up",
+                      style: mBold.copyWith(color: secondaryColor)),
+                  onPressed: () {
+                    BlocProvider.of<AuthenticationBloc>(context).add(SignUpUser(
+                        userName: _usernameController.text.trim(),
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim()));
+                  });
+            }, listener: (context, state) {
+              if (state is AuthenticationSuccessState) {
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    (route) => false);
+              } else if (state is AuthenticationFailureState) {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        content: Text("Error during Sign Up"),
+                      );
+                    });
+              }
+            }),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Already have an account?",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()));
+                  },
+                  child: Text("Sign In",
+                      style: smMedium.copyWith(color: primaryColor)),
+                ),
+              ],
+            ),
           ],
         ),
       ))),

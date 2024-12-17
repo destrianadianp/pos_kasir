@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -19,25 +20,45 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late final TextEditingController _usernameController;
-  late final TextEditingController _emailController;
+  late TextEditingController _usernameController;
+  late TextEditingController _emailController;
+  late String _profileImageUrl;
 
   File? _profileImage;
 
   @override
   void initState() {
     super.initState();
+    getUser();
+
+    _usernameController = TextEditingController();
+    _emailController = TextEditingController();
+    _profileImageUrl = '';
 
     // Inisialisasi dengan data dari Firebase
-    _usernameController = TextEditingController(text: widget.user.userName);
-    _emailController = TextEditingController(text: widget.user.email);
+    /* _usernameController = TextEditingController(text: widget.user.userName);
+    _emailController = TextEditingController(text: widget.user.email); */
 
-    FirebaseAuth.instance.currentUser?.reload().then((_) {
-    final currentUser = FirebaseAuth.instance.currentUser;
+    /* FirebaseAuth.instance.currentUser?.reload().then((_) {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      setState(() {
+        _usernameController.text =
+            (currentUser?.displayName ?? widget.user.userName)!;
+      });
+    }); */
+  }
+
+  Future<void> getUser() async {
+    final Map<String, dynamic> currentUserData = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .get()
+        .then((value) => value.data() as Map<String, dynamic>);
     setState(() {
-      _usernameController.text = (currentUser?.displayName ?? widget.user.userName)!;
+      _usernameController.text = currentUserData['userName'];
+      _emailController.text = currentUserData['email'];
+      _profileImageUrl = currentUserData['imageUrl'];
     });
-  });
   }
 
   @override
@@ -65,11 +86,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               alignment: Alignment.bottomRight,
               children: [
                 CircleImageView(
-                  imageFile: _profileImage,
-                  imageAsset: "assets/images/img_profil_default.jpg",
-                  imageType: _profileImage != null
-                      ? ImageType.file
-                      : ImageType.asset,
+                  url: _profileImageUrl,
+                  imageType: ImageType.network,
                   radius: 60,
                 ),
                 CustomImagePicker(

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,8 @@ class ProductCartProvider extends ChangeNotifier {
 
   Future<void> fetchProducts(String userId) async {
     try {
-      final snapshot = await _firestore.collection('products').get();
+      final snapshot = await _firestore.collection('products').where('userId', isEqualTo: userId).get();
+      log('fetchProducts: $snapshot');
       _products.clear();
       _products.addAll(snapshot.docs.map((doc) {
         final data = doc.data();

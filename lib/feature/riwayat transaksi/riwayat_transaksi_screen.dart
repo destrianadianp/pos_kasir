@@ -29,7 +29,8 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
 
       if (user != null) {
         String userId = user.uid;
-      Provider.of<TransactionProvider>(context, listen: false).fetchTransaction(userId);
+        Provider.of<TransactionProvider>(context, listen: false)
+            .fetchTransaction(userId);
       }
     });
   }
@@ -41,7 +42,8 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
 
     // Filter transactions based on search query
     final filteredTransactions = transactions
-        .where((transaction) => transaction.id.toLowerCase().contains(searchQuery.toLowerCase()))
+        .where((transaction) =>
+            transaction.id.toLowerCase().contains(searchQuery.toLowerCase()))
         .toList();
 
     // Group transactions by date
@@ -81,65 +83,110 @@ class _RiwayatTransaksiScreenState extends State<RiwayatTransaksiScreen> {
           ),
           Expanded(
             child: transactions.isEmpty
-                ? const Center(child: Text("Tidak ada data transaksi."))
-                : ListView.builder(
-                    itemCount: sortedDates.length,
-                    itemBuilder: (context, index) {
-                      final dateKey = sortedDates[index];
-                      final transactionsByDate = groupedTransactions[dateKey]!;
+                ? Center(
+                    child: Column(
+                      children: <Widget>[
+                        Text(
+                          "Tidak ada data transaksi.",
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            User? user = FirebaseAuth.instance.currentUser;
 
-                      // Sort transactions within the same date by time (ascending)
-                      transactionsByDate.sort((a, b) => b.date.compareTo(a.date));
+                            if (user != null) {
+                              String userId = user.uid;
+                              await Provider.of<TransactionProvider>(context,
+                                      listen: false)
+                                  .fetchTransaction(userId);
+                            }
+                          },
+                          child: Text('Muat Ulang'),
+                        ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      User? user = FirebaseAuth.instance.currentUser;
 
-                      final totalAmount = transactionsByDate
-                          .fold(0, (sum, transaction) => sum + transaction.totalBill.toInt());
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            color: Colors.grey[200],
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  DateFormat('EEEE, dd MMM yyyy', 'id_ID').format(DateTime.parse(dateKey)),
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  "Rp${NumberFormat('#,##0', 'id_ID').format(totalAmount)}",
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: transactionsByDate.length,
-                            itemBuilder: (context, idx) {
-                              final transaction = transactionsByDate[idx];
-                              return TransactionItem(
-                                transactionId: transaction.id,
-                                paymentMethod: transaction.paymentMethod,
-                                amount: transaction.totalBill.toInt(),
-                                time: DateFormat('HH:mm').format(transaction.date),
-                                onTap: () {
-                                  // Navigasi ke halaman detail dengan mengirimkan ID transaksi
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TransactionDetailPage(transactionId: transaction.id),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ],
-                      );
+                      if (user != null) {
+                        String userId = user.uid;
+                        await Provider.of<TransactionProvider>(context,
+                                listen: false)
+                            .fetchTransaction(userId);
+                      }
                     },
+                    child: ListView.builder(
+                      itemCount: sortedDates.length,
+                      itemBuilder: (context, index) {
+                        final dateKey = sortedDates[index];
+                        final transactionsByDate =
+                            groupedTransactions[dateKey]!;
+
+                        // Sort transactions within the same date by time (ascending)
+                        transactionsByDate
+                            .sort((a, b) => b.date.compareTo(a.date));
+
+                        final totalAmount = transactionsByDate.fold(
+                            0,
+                            (sum, transaction) =>
+                                sum + transaction.totalBill.toInt());
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              color: Colors.grey[200],
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    DateFormat('EEEE, dd MMM yyyy', 'id_ID')
+                                        .format(DateTime.parse(dateKey)),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    "Rp${NumberFormat('#,##0', 'id_ID').format(totalAmount)}",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: transactionsByDate.length,
+                              itemBuilder: (context, idx) {
+                                final transaction = transactionsByDate[idx];
+                                return TransactionItem(
+                                  transactionId: transaction.id,
+                                  paymentMethod: transaction.paymentMethod,
+                                  amount: transaction.totalBill.toInt(),
+                                  time: DateFormat('HH:mm')
+                                      .format(transaction.date),
+                                  onTap: () {
+                                    // Navigasi ke halaman detail dengan mengirimkan ID transaksi
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TransactionDetailPage(
+                                                transactionId: transaction.id),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
           ),
         ],

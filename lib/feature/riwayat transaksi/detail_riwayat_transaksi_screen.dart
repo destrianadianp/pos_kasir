@@ -9,7 +9,7 @@ class TransactionDetailPage extends StatelessWidget {
 
   Future<Map<String, dynamic>> fetchTransactionDetails() async {
     final snapshot = await FirebaseFirestore.instance
-        .collection('transactions')
+        .collection('transaction')
         .doc(transactionId)
         .get();
 
@@ -42,8 +42,14 @@ class TransactionDetailPage extends StatelessWidget {
           }
 
           final data = snapshot.data!;
+
+          for (var key in data.keys) {
+            print("$key: ${data[key]}");
+          }
+
           final paymentMethod = data['paymentMethod'] ?? 'Unknown';
-          final transactionDate = DateFormat('dd MMM yyyy, HH:mm').format(DateTime.fromMillisecondsSinceEpoch(data['date']));
+          // final transactionDate = DateFormat('dd MMM yyyy, HH:mm').format(DateTime.fromMillisecondsSinceEpoch(data['date']));
+          final transactionDate = DateTime.now().toString();
           final cartItems = data['cartItems']; // Assuming cartItems is a list of items in the transaction
           final totalAmount = data['totalBill'];
           final receivedAmount = data['receivedAmount'];
@@ -76,9 +82,9 @@ class TransactionDetailPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: cartItems.map<Widget>((item) {
                           return DetailRow(
-                            label: item['productName'],
-                            value: "Rp${item['price']} x ${item['quantity']}",
-                            trailing: "Rp${item['total']}",
+                            label: item['product']['productName'],
+                            value: "Rp${item['product']['price']} x ${item['quantity']}",
+                            trailing: "Rp$totalAmount",
                           );
                         }).toList(),
                       ),
