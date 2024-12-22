@@ -46,6 +46,7 @@ dependencies:
   bloc: ^8.1.4
   cloud_firestore: ^5.5.1
   flutter_bloc: ^8.1.6
+  flutter_image_compress: ^2.3.0
 
 dev_dependencies:
   flutter_test:

@@ -74,8 +74,6 @@ class ProductCartProvider extends ChangeNotifier {
   Future<void> addProduct(ProductModel product) async {
     try {
       await FirebaseFirestore.instance
-          .collection('users')
-          .doc(product.userId)
           .collection('products')
           .add(product.toMap());
       debugPrint("Produk berhasil ditambahkan oleh user: ${product.userId}");

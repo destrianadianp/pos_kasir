@@ -22,15 +22,21 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchValue = '';
+  int _currentIndex =0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener((){
+      setState(() {
+        _currentIndex = _tabController.index;
+      });
+    });
     Provider.of<ProductCartProvider>(context, listen: false).fetchProducts(
       FirebaseAuth.instance.currentUser!.uid,
     );
-    /*WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Dapatkan user saat ini dari Firebase Authentication
       User? user = FirebaseAuth.instance.currentUser;
 
@@ -38,10 +44,15 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
         String userId = user.uid; // Ambil uid dari user
         Provider.of<CategoryProvider>(context, listen: false)
             .fetchCategories(userId); // Kirim uid ke fetchCategories
-      } else {
-        print('User belum login');
-      }
-    }); */
+      } 
+    }); 
+  }
+
+ @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -98,12 +109,17 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
       floatingActionButton: FloatingActionButton(
         backgroundColor: secondaryColor,
         onPressed: () {
-          Navigator.push(
+          if (_currentIndex ==0) {
+            Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const TambahProduk(),
             ),
           );
+          }
+          else if (_currentIndex ==1){
+            _showAddCategoryDialog(context, categoryProvider);
+          }
         },
         child: const Icon(Icons.add),
       ),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_kasir/feature/authentication/login/login_screen.dart';
 import 'package:pos_kasir/feature/kelola_produk/kelola_produk_screen.dart';
 import 'package:pos_kasir/feature/edit_profile/edit_profile_screen.dart';
 import 'package:pos_kasir/feature/riwayat%20transaksi/detail_riwayat_transaksi_screen.dart';
@@ -19,7 +20,7 @@ class DrawerMenu extends StatelessWidget {
     User? currentUser = FirebaseAuth.instance.currentUser;
 
     return Drawer(
-      child: ListView(
+      child: ListView( 
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
@@ -156,10 +157,11 @@ class DrawerMenu extends StatelessWidget {
           const SizedBox(height: space500),
           TextButton(
             onPressed: () {
-              _showDeleteAccountDialog(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+              // _showDeleteAccountDialog(context);
             },
             child:
-                const Text("Hapus Akun", style: TextStyle(color: Colors.red)),
+                const Text("Logout", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

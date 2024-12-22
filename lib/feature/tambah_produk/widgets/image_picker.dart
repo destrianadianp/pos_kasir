@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImagePickerWidget extends StatefulWidget {
@@ -26,20 +27,30 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
     base64String = widget.initialImage;
   }
 
+  Future<XFile?> _compressImage(File file) async {
+    final directory = await Directory.systemTemp.createTemp();
+    final targetPath = '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    final compressedFile = await FlutterImageCompress.compressAndGetFile(
+      file.path, targetPath);
+      return compressedFile;
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
 
     if (pickedFile != null) {
+      File originalFile = File(pickedFile.path);
+      XFile? compressedFile = await _compressImage(originalFile);
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageFile = (compressedFile ?? originalFile) as File?;
       });
 
-      // Konversi file ke base64
-      List<int> imageBytes = File(_imageFile!.path).readAsBytesSync();
+      if (_imageFile!=null) {
+        List<int> imageBytes = await _imageFile!.readAsBytes();
       base64String = base64Encode(imageBytes);
-
-      // Kirim base64 ke fungsi onImagePicked
       widget.onImagePicked(base64String);
+      }
     }
   }
 
