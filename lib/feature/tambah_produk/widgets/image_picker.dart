@@ -1,17 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImagePickerWidget extends StatefulWidget {
   final void Function(String?) onImagePicked;
-  final String? initialImage; // Tambahkan parameter untuk gambar awal
+  final String? initialImage;
 
-  ImagePickerWidget({required this.onImagePicked, this.initialImage});
+  const ImagePickerWidget({
+    super.key,
+    required this.onImagePicked,
+    this.initialImage,
+  });
 
   @override
-  _ImagePickerWidgetState createState() => _ImagePickerWidgetState();
+  State<ImagePickerWidget> createState() => _ImagePickerWidgetState();
 }
 
 class _ImagePickerWidgetState extends State<ImagePickerWidget> {
@@ -23,33 +28,49 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
   @override
   void initState() {
     super.initState();
-    // Jika ada gambar awal, gunakan itu
     base64String = widget.initialImage;
   }
 
   Future<XFile?> _compressImage(File file) async {
     final directory = await Directory.systemTemp.createTemp();
-    final targetPath = '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
+    final targetPath =
+        '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
     final compressedFile = await FlutterImageCompress.compressAndGetFile(
-      file.path, targetPath);
-      return compressedFile;
+      file.path,
+      targetPath,
+      quality: 50,
+    );
+    if (kDebugMode) {
+      print('Compressed file size: ${compressedFile!.path}');
+    }
+    return compressedFile;
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
+    final XFile? pickedFile = await _picker.pickImage(
+      source: source,
+    );
+
+    if (kDebugMode) {
+      print('Initial image size: ${await pickedFile!.length()} bytes');
+    }
 
     if (pickedFile != null) {
       File originalFile = File(pickedFile.path);
       XFile? compressedFile = await _compressImage(originalFile);
+
+      if (kDebugMode) {
+        print('Compressed image size: ${await compressedFile!.length()} bytes');
+      }
+
       setState(() {
-        _imageFile = (compressedFile ?? originalFile) as File?;
+        _imageFile = File(compressedFile!.path);
       });
 
-      if (_imageFile!=null) {
+      if (_imageFile != null) {
         List<int> imageBytes = await _imageFile!.readAsBytes();
-      base64String = base64Encode(imageBytes);
-      widget.onImagePicked(base64String);
+        base64String = base64Encode(imageBytes);
+        widget.onImagePicked(base64String);
       }
     }
   }

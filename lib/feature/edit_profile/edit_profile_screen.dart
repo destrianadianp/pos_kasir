@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../../models/user.dart';
-import '../../services/authentication.dart';
-import '../ui/shared_view/circle_image_view.dart';
 import '../ui/shared_view/custom_button.dart';
 import '../ui/shared_view/custom_image_picker.dart';
 import '../ui/shared_view/custom_text_form_field.dart';
@@ -14,7 +12,10 @@ import '../ui/shared_view/custom_text_form_field.dart';
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
 
-  EditProfileScreen({required this.user});
+  const EditProfileScreen({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -24,8 +25,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
   late String _profileImageUrl;
-
   File? _profileImage;
+  Uint8List? _profileImageBytes;
 
   @override
   void initState() {
@@ -50,15 +51,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> getUser() async {
-    final Map<String, dynamic> currentUserData = await FirebaseFirestore.instance
+    final Map<String, dynamic> currentUserData = await FirebaseFirestore
+        .instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser?.uid)
         .get()
-        .then((value) => value.data() as Map<String, dynamic>);
+        .then(
+          (value) => value.data() as Map<String, dynamic>,
+        );
     setState(() {
       _usernameController.text = currentUserData['userName'];
       _emailController.text = currentUserData['email'];
-      _profileImageUrl = currentUserData['imageUrl'];
+      if (currentUserData.containsKey('imageUrl')) {
+        _profileImageUrl = currentUserData['imageUrl'];
+        _profileImageBytes = base64Decode(_profileImageUrl);
+      }
     });
   }
 
@@ -86,13 +93,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Stack(
               alignment: Alignment.bottomRight,
               children: [
-                Image.memory(base64Decode(_profileImageUrl),
-                ),
-                CircleImageView(
+                _profileImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: Image.file(
+                          _profileImage!,
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : _profileImageBytes != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: Image.memory(
+                              _profileImageBytes!,
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.account_circle,
+                            size: 120,
+                            color: Colors.grey,
+                          ),
+                /* CircleImageView(
                   url: _profileImageUrl,
                   imageType: ImageType.network,
                   radius: 60,
-                ),
+                ), */
                 CustomImagePicker(
                   onImageSelected: (File? selectedImage) {
                     setState(() {
@@ -141,8 +171,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _saveUserProfile() async {
     try {
+      // Dapatkan userId dari Firebase
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      // Update data pengguna di Firestore
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'userName': _usernameController.text,
+        'email': _emailController.text,
+        'imageUrl': _profileImage != null
+            ? base64Encode(_profileImage!.readAsBytesSync())
+            : _profileImageUrl,
+      });
+
+      /*
       // Simpan username yang baru ke Firebase
       final user = FirebaseAuth.instance.currentUser;
+
+      // Jika pengguna tidak null (sudah login)
       if (user != null) {
         // Update displayName di Firebase Authentication
         await user.updateDisplayName(_usernameController.text);
@@ -164,6 +209,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SnackBar(content: Text("Profil berhasil diperbarui!")),
         );
       }
+      */
     } catch (e) {
       print("Error updating profile: $e");
       ScaffoldMessenger.of(context).showSnackBar(

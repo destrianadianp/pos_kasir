@@ -14,7 +14,7 @@ class KelolaProdukPage extends StatefulWidget {
   const KelolaProdukPage({super.key});
 
   @override
-  _KelolaProdukPageState createState() => _KelolaProdukPageState();
+  State<KelolaProdukPage> createState() => _KelolaProdukPageState();
 }
 
 class _KelolaProdukPageState extends State<KelolaProdukPage>
@@ -22,13 +22,13 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchValue = '';
-  int _currentIndex =0;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener((){
+    _tabController.addListener(() {
       setState(() {
         _currentIndex = _tabController.index;
       });
@@ -36,19 +36,21 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
     Provider.of<ProductCartProvider>(context, listen: false).fetchProducts(
       FirebaseAuth.instance.currentUser!.uid,
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Dapatkan user saat ini dari Firebase Authentication
-      User? user = FirebaseAuth.instance.currentUser;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async {
+        // Dapatkan user saat ini dari Firebase Authentication
+        User? user = FirebaseAuth.instance.currentUser;
 
-      if (user != null) {
-        String userId = user.uid; // Ambil uid dari user
-        Provider.of<CategoryProvider>(context, listen: false)
-            .fetchCategories(userId); // Kirim uid ke fetchCategories
-      } 
-    }); 
+        if (user != null) {
+          String userId = user.uid; // Ambil uid dari user
+          Provider.of<CategoryProvider>(context, listen: false)
+              .fetchCategories(userId); // Kirim uid ke fetchCategories
+        }
+      },
+    );
   }
 
- @override
+  @override
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
@@ -84,40 +86,42 @@ class _KelolaProdukPageState extends State<KelolaProdukPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          Column(
-            children: [
-              CustomSearchBar(
-                hintText: 'Cari barang',
-                onChanged: (value) {
-                  setState(() {
-                    _searchValue = value;
-                  });
-                },
-                controller: _searchController,
-              ),
-              Expanded(
-                child: ProdukPage(
-                  productCartProvider: productCartProvider,
-                  searchQuery: _searchValue,
+          Container(
+            color: secondaryColor,
+            child: Column(
+              children: [
+                CustomSearchBar(
+                  hintText: 'Cari barang',
+                  onChanged: (value) {
+                    setState(() {
+                      _searchValue = value;
+                    });
+                  },
+                  controller: _searchController,
                 ),
-              ),
-            ],
+                Expanded(
+                  child: ProdukPage(
+                    productCartProvider: productCartProvider,
+                    searchQuery: _searchValue,
+                  ),
+                ),
+              ],
+            ),
           ),
-          KategoriPage()
+          const KategoriPage()
         ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: secondaryColor,
         onPressed: () {
-          if (_currentIndex ==0) {
+          if (_currentIndex == 0) {
             Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const TambahProduk(),
-            ),
-          );
-          }
-          else if (_currentIndex ==1){
+              context,
+              MaterialPageRoute(
+                builder: (context) => const TambahProduk(),
+              ),
+            );
+          } else if (_currentIndex == 1) {
             _showAddCategoryDialog(context, categoryProvider);
           }
         },

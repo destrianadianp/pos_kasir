@@ -1,37 +1,33 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pos_kasir/feature/ui/color.dart';
-import 'package:pos_kasir/feature/ui/shared_view/custom_button.dart';
 import 'package:provider/provider.dart';
 
 import '../../../provider/category_provider.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:pos_kasir/feature/ui/color.dart';
-
 class KategoriPage extends StatefulWidget {
-  const KategoriPage({Key? key}) : super(key: key);
+  const KategoriPage({super.key});
 
   @override
-  _KategoriPageState createState() => _KategoriPageState();
+  State<KategoriPage> createState() => _KategoriPageState();
 }
 
 class _KategoriPageState extends State<KategoriPage> {
   @override
   void initState() {
     super.initState();
-    // Memuat kategori dari Firebase
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-    // Dapatkan user saat ini dari Firebase Authentication
-    User? user = FirebaseAuth.instance.currentUser;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async {
+        User? user = FirebaseAuth.instance.currentUser;
 
-    if (user != null) {
-      String userId = user.uid; 
-    await Provider.of<CategoryProvider>(context, listen: false).fetchCategories(userId);// Kirim uid ke fetchCategories
-    } 
-  });
+        if (user != null) {
+          String userId = user.uid;
+          await Provider.of<CategoryProvider>(
+            context,
+            listen: false,
+          ).fetchCategories(userId);
+        }
+      },
+    );
   }
 
   @override
@@ -39,13 +35,13 @@ class _KategoriPageState extends State<KategoriPage> {
     final categoryProvider = Provider.of<CategoryProvider>(context);
 
     return Scaffold(
-      // appBar: AppBar(title: const Text("Kelola Kategori")),
+      backgroundColor: Colors.white,
       body: ListView.builder(
         itemCount: categoryProvider.categories.length,
         itemBuilder: (context, index) {
           final category = categoryProvider.categories[index];
           return ListTile(
-            title: Text(category), 
+            title: Text(category),
             trailing: category != CategoryProvider.fixedCategory
                 ? IconButton(
                     icon: const Icon(Icons.edit),
@@ -63,7 +59,9 @@ class _KategoriPageState extends State<KategoriPage> {
   }
 
   void _showAddCategoryDialog(
-      BuildContext context, CategoryProvider categoryProvider) {
+    BuildContext context,
+    CategoryProvider categoryProvider,
+  ) {
     TextEditingController controller = TextEditingController();
 
     showDialog(
@@ -79,7 +77,8 @@ class _KategoriPageState extends State<KategoriPage> {
             children: [
               TextField(
                 controller: controller,
-                decoration: const InputDecoration(labelText: 'Nama kategori baru'),
+                decoration:
+                    const InputDecoration(labelText: 'Nama kategori baru'),
               ),
               const SizedBox(height: 16.0),
               Row(
@@ -90,23 +89,24 @@ class _KategoriPageState extends State<KategoriPage> {
                     child: const Text('Batal'),
                   ),
                   ElevatedButton(
-                  onPressed: () async {
-                    if (controller.text.isNotEmpty) {
-                      // Dapatkan userId dari Firebase Authentication
-                      User? user = FirebaseAuth.instance.currentUser;
+                    onPressed: () async {
+                      if (controller.text.isNotEmpty) {
+                        // Dapatkan userId dari Firebase Authentication
+                        User? user = FirebaseAuth.instance.currentUser;
 
-                      if (user != null) {
-                        String userId = user.uid;
-                        // Panggil addCategory dengan userId dan kategori
-                        await categoryProvider.addCategory(userId, controller.text);
-                      } else {
-                        print('User belum login');
+                        if (user != null) {
+                          String userId = user.uid;
+                          // Panggil addCategory dengan userId dan kategori
+                          await categoryProvider.addCategory(
+                              userId, controller.text);
+                        } else {
+                          print('User belum login');
+                        }
+                        Navigator.pop(context);
                       }
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Simpan'),
-                ),
+                    },
+                    child: const Text('Simpan'),
+                  ),
                 ],
               ),
             ],
@@ -117,90 +117,92 @@ class _KategoriPageState extends State<KategoriPage> {
   }
 
   void _showEditCategoryDialog(BuildContext context, String currentCategory) {
-  TextEditingController controller =
-      TextEditingController(text: currentCategory);
+    TextEditingController controller =
+        TextEditingController(text: currentCategory);
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        contentPadding: const EdgeInsets.all(16.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(labelText: 'Nama Kategori'),
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Tombol hapus kategori
-                TextButton(
-                  onPressed: () async {
-                    if (controller.text.isNotEmpty &&
-                        controller.text != currentCategory) {
-                      // Ambil instance CategoryProvider
-                      final categoryProvider =
-                          Provider.of<CategoryProvider>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          contentPadding: const EdgeInsets.all(16.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(labelText: 'Nama Kategori'),
+              ),
+              const SizedBox(height: 16.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Tombol hapus kategori
+                  TextButton(
+                    onPressed: () async {
+                      if (controller.text.isNotEmpty &&
+                          controller.text != currentCategory) {
+                        // Ambil instance CategoryProvider
+                        final categoryProvider = Provider.of<CategoryProvider>(
+                            context,
+                            listen: false);
 
-                      // Dapatkan userId dari Firebase Authentication
-                      User? user = FirebaseAuth.instance.currentUser;
+                        // Dapatkan userId dari Firebase Authentication
+                        User? user = FirebaseAuth.instance.currentUser;
 
-                      if (user != null) {
-                        String userId = user.uid;
+                        if (user != null) {
+                          String userId = user.uid;
 
-                        // Panggil deleteCategory menggunakan instance
-                        await categoryProvider.deleteCategory(
-                            userId, currentCategory);
+                          // Panggil deleteCategory menggunakan instance
+                          await categoryProvider.deleteCategory(
+                              userId, currentCategory);
+                        }
+                        Navigator.pop(context);
                       }
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Hapus',
-                      style: TextStyle(color: Colors.red)),
-                ),
+                    },
+                    child: const Text('Hapus',
+                        style: TextStyle(color: Colors.red)),
+                  ),
 
-                // Tombol batal
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
+                  // Tombol batal
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Batal'),
+                  ),
 
-                // Tombol simpan kategori
-                ElevatedButton(
-                  onPressed: () async {
-                    if (controller.text.isNotEmpty &&
-                        controller.text != currentCategory) {
-                      // Ambil instance CategoryProvider
-                      final categoryProvider =
-                          Provider.of<CategoryProvider>(context, listen: false);
+                  // Tombol simpan kategori
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (controller.text.isNotEmpty &&
+                          controller.text != currentCategory) {
+                        // Ambil instance CategoryProvider
+                        final categoryProvider = Provider.of<CategoryProvider>(
+                            context,
+                            listen: false);
 
-                      // Dapatkan userId dari Firebase Authentication
-                      User? user = FirebaseAuth.instance.currentUser;
+                        // Dapatkan userId dari Firebase Authentication
+                        User? user = FirebaseAuth.instance.currentUser;
 
-                      if (user != null) {
-                        String userId = user.uid;
+                        if (user != null) {
+                          String userId = user.uid;
 
-                        // Panggil editCategory menggunakan instance
-                        await categoryProvider.editCategory(
-                            userId, currentCategory, controller.text);
+                          // Panggil editCategory menggunakan instance
+                          await categoryProvider.editCategory(
+                              userId, currentCategory, controller.text);
+                        }
+                        Navigator.pop(context);
                       }
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Simpan'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+                    },
+                    child: const Text('Simpan'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

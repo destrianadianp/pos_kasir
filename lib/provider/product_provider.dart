@@ -18,7 +18,10 @@ class ProductCartProvider extends ChangeNotifier {
 
   Future<void> fetchProducts(String userId) async {
     try {
-      final snapshot = await _firestore.collection('products').where('userId', isEqualTo: userId).get();
+      final snapshot = await _firestore
+          .collection('products')
+          .where('userId', isEqualTo: userId)
+          .get();
       log('fetchProducts: $snapshot');
       _products.clear();
       _products.addAll(snapshot.docs.map((doc) {

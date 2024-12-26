@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../../models/cart_model.dart';
 import '../../../provider/product_provider.dart';
 import '../../edit_produk/edit_produk_screen.dart';
 
@@ -43,8 +42,9 @@ class ProdukPage extends StatelessWidget {
           final product = filteredProducts[index];
           final isInCart = productCartProvider.cartItems
               .any((item) => item.product.productId == product.productId);
-      
+
           return Card(
+            color: Colors.white,
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: Column(
               children: [
@@ -53,7 +53,8 @@ class ProdukPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EditProdukScreen(product: product),
+                        builder: (context) =>
+                            EditProdukScreen(product: product),
                       ),
                     );
                   },
@@ -65,11 +66,12 @@ class ProdukPage extends StatelessWidget {
                             height: 50,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              print('Error decoding gambar: $error');
                               return const Icon(Icons.error);
                             },
                           )
-                        : const Icon(Icons.image_not_supported),
+                        : const Icon(
+                            Icons.image_not_supported,
+                          ),
                     title: Text(product.productName),
                     subtitle: Text('Rp ${product.price.toStringAsFixed(0)}'),
                     trailing: Text('Stok: ${product.stock}'),

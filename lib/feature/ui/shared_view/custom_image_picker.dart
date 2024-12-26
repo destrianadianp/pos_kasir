@@ -5,16 +5,29 @@ import 'package:image_picker/image_picker.dart';
 class CustomImagePicker extends StatelessWidget {
   final Function(File?) onImageSelected;
 
-  const CustomImagePicker({super.key, required this.onImageSelected});
+  const CustomImagePicker({
+    super.key,
+    required this.onImageSelected,
+  });
 
-  Future<void> _pickImage(BuildContext context, ImageSource source) async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? pickedFile = await _picker.pickImage(source: source);
+  Future<void> _pickImage(
+    BuildContext context,
+    ImageSource source,
+  ) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: source,
+    );
 
     if (pickedFile != null) {
-      onImageSelected(File(pickedFile.path));
+      onImageSelected(
+        File(
+          pickedFile.path,
+        ),
+      );
     }
-    Navigator.of(context).pop();
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context);
   }
 
   void _showPickerOptions(BuildContext context) {
@@ -24,13 +37,13 @@ class CustomImagePicker extends StatelessWidget {
         child: Wrap(
           children: [
             ListTile(
-              leading: Icon(Icons.photo_library),
-              title: Text('Pilih dari Galeri'),
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Pilih dari Galeri'),
               onTap: () => _pickImage(context, ImageSource.gallery),
             ),
             ListTile(
-              leading: Icon(Icons.camera_alt),
-              title: Text('Buka Kamera'),
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Buka Kamera'),
               onTap: () => _pickImage(context, ImageSource.camera),
             ),
           ],
@@ -43,7 +56,7 @@ class CustomImagePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _showPickerOptions(context),
-      child: Icon(
+      child: const Icon(
         Icons.camera_alt,
         color: Colors.black54,
         size: 30,

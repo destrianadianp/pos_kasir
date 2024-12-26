@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 enum ImageType { network, asset, file }
 
@@ -11,14 +12,16 @@ class CircleImageView extends StatelessWidget {
   final double radius;
   final ImageType imageType;
   final BoxFit fit;
-  const CircleImageView(
-      {super.key,
-      this.url,
-      this.imageAsset,
-      this.imageFile,
-      this.radius = 50,
-      this.imageType = ImageType.network,
-      this.fit = BoxFit.cover});
+
+  const CircleImageView({
+    super.key,
+    this.url,
+    this.imageAsset,
+    this.imageFile,
+    this.radius = 50,
+    this.imageType = ImageType.network,
+    this.fit = BoxFit.cover,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +35,8 @@ class CircleImageView extends StatelessWidget {
             memCacheHeight: 400,
             placeholder: (context, url) =>
                 const Center(child: CircularProgressIndicator()),
-            errorWidget: (context, url, error) => Image.asset(
-              imageAsset ?? "assets/images/img_profil_default.jpg",
+            errorWidget: (context, url, error) => SvgPicture.asset(
+              imageAsset ?? "assets/images/default_user_profile_picture.svg",
               fit: fit,
             ),
             fit: fit,

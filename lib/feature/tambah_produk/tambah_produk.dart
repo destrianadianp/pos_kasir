@@ -101,21 +101,24 @@ class _TambahProdukState extends State<TambahProduk> {
                     final String userId = auth.currentUser!.uid;
 
                     try {
-                      final newProduct = {
-                        "productId": DateTime.now().toString(),
+                      // Create document reference first
+                      final docRef = FirebaseFirestore.instance
+                          .collection('products')
+                          .doc();
+
+                      final Map<String, dynamic> newProduct = {
+                        "productId": docRef.id, // Use the same ID
                         "productName": _namaProdukController.text,
-                        "productImage":
-                            base64Image ?? '', // Atur jika menggunakan gambar
+                        "productImage": base64Image ?? '',
                         "price": double.parse(_hargaJualController.text),
                         "stock": int.parse(_stokController.text),
                         "category": dropdownValue,
                         "userId": userId,
+                        "createdAt": FieldValue.serverTimestamp(),
                       };
 
-                      // Simpan produk ke Firebase
-                      await FirebaseFirestore.instance
-                          .collection('products')
-                          .add(newProduct);
+                      // Use set() with the same document reference
+                      await docRef.set(newProduct);
 
                       // Tampilkan notifikasi sukses
                       ScaffoldMessenger.of(context).showSnackBar(

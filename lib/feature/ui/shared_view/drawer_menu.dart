@@ -1,18 +1,56 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_kasir/feature/authentication/login/login_screen.dart';
 import 'package:pos_kasir/feature/kelola_produk/kelola_produk_screen.dart';
 import 'package:pos_kasir/feature/edit_profile/edit_profile_screen.dart';
-import 'package:pos_kasir/feature/riwayat%20transaksi/detail_riwayat_transaksi_screen.dart';
 import 'package:pos_kasir/feature/riwayat%20transaksi/riwayat_transaksi_screen.dart';
 import 'package:pos_kasir/feature/transaksi/transaksi_screen.dart';
 import 'package:pos_kasir/feature/ui/dimension.dart';
 
 import '../../../models/user.dart';
 
-class DrawerMenu extends StatelessWidget {
-  const DrawerMenu({Key? key}) : super(key: key);
+class DrawerMenu extends StatefulWidget {
+  const DrawerMenu({super.key});
+
+  @override
+  State<DrawerMenu> createState() => _DrawerMenuState();
+}
+
+class _DrawerMenuState extends State<DrawerMenu> {
+  Uint8List? _profileImageBytes;
+  String? _userName;
+  String? _email;
+
+  @override
+  void initState() {
+    super.initState();
+    // Menyiapkan initial data
+    _userName = 'Memuat...';
+    _email = 'Memuat...';
+    _profileImageBytes = Uint8List(0);
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    final DocumentSnapshot currentUserDataDocument = await FirebaseFirestore
+        .instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .get();
+
+    final Map<String, dynamic> currentUserData =
+        currentUserDataDocument.data() as Map<String, dynamic>;
+
+    setState(() {
+      _userName = currentUserData['userName'];
+      _email = currentUserData['email'];
+      _profileImageBytes = base64Decode(currentUserData['imageUrl']);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +58,7 @@ class DrawerMenu extends StatelessWidget {
     User? currentUser = FirebaseAuth.instance.currentUser;
 
     return Drawer(
-      child: ListView( 
+      child: ListView(
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
@@ -29,50 +67,32 @@ class DrawerMenu extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Menampilkan gambar profil jika ada
-                FutureBuilder(
-                    future: FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(currentUser?.uid)
-                        .get(),
-                    builder: (context, snapshot) {
-                      return CircleAvatar(
-                        radius: 30,
-                        backgroundImage: currentUser?.photoURL != null
-                            ? NetworkImage(currentUser!.photoURL!)
-                            // : AssetImage('assets/images/profile.jpg') as ImageProvider,
-                            : snapshot.hasData
-                                ? NetworkImage(snapshot.data!['imageUrl'])
-                                : const AssetImage('assets/images/profile.jpg')
-                                    as ImageProvider,
-                      );
-                    }),
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: _profileImageBytes == Uint8List(0)
+                      ? const AssetImage('assets/images/default_profile.png')
+                          as ImageProvider
+                      : MemoryImage(_profileImageBytes!),
+                ),
                 const SizedBox(width: 16.0),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      FutureBuilder(
-                          future: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(currentUser?.uid)
-                              .get(),
-                          builder: (context, snapshot) {
-                            return Text(
-                              // currentUser?.displayName ?? 'Nama Tidak Tersedia',  // Menampilkan nama pengguna
-                              snapshot.hasData
-                                  ? snapshot.data!['userName']
-                                  : 'Nama Tidak Tersedia',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            );
-                          }),
                       Text(
-                        currentUser?.email ??
-                            'Email Tidak Tersedia', // Menampilkan email pengguna
-                        style:
-                            const TextStyle(fontSize: 14, color: Colors.grey),
+                        _userName ?? 'Username Tidak Tersedia',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        _email ?? 'Email Tidak Tersedia',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -157,11 +177,11 @@ class DrawerMenu extends StatelessWidget {
           const SizedBox(height: space500),
           TextButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()));
               // _showDeleteAccountDialog(context);
             },
-            child:
-                const Text("Logout", style: TextStyle(color: Colors.red)),
+            child: const Text("Logout", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

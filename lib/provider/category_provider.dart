@@ -11,12 +11,13 @@ class CategoryProvider extends ChangeNotifier {
   /// Memuat kategori dari Firebase
   Future<void> fetchCategories(String userId) async {
     final snapshot = await _firestore
-    .collection('category')
-    .where('userId', isEqualTo: userId)
-    .get();
+        .collection('category')
+        .where('userId', isEqualTo: userId)
+        .get();
     _customCategories = snapshot.docs
         .map((doc) => doc['name'] as String)
-        .where((name) => name != fixedCategory) // Pastikan tidak memuat ulang "Umum"
+        .where((name) =>
+            name != fixedCategory) // Pastikan tidak memuat ulang "Umum"
         .toList();
     notifyListeners();
   }
@@ -24,27 +25,29 @@ class CategoryProvider extends ChangeNotifier {
   /// Menambahkan kategori baru
   Future<void> addCategory(String userId, String category) async {
     if (!_customCategories.contains(category) && category != fixedCategory) {
-      await _firestore
-      .collection('category')
-      .add({'name': category});
+      await _firestore.collection('category').add({
+        'name': category,
+        'userId': userId,
+      });
       _customCategories.add(category);
       notifyListeners();
     }
   }
 
   /// Mengedit kategori
-  Future<void> editCategory(String userId, String oldCategory, String newCategory) async {
+  Future<void> editCategory(
+      String userId, String oldCategory, String newCategory) async {
     final query = await _firestore
-  .collection('category')
+        .collection('category')
         .where('name', isEqualTo: oldCategory)
         .get();
 
     if (query.docs.isNotEmpty) {
       final docId = query.docs.first.id;
       await _firestore
-    .collection('category')
-      .doc(docId)
-      .update({'name': newCategory});
+          .collection('category')
+          .doc(docId)
+          .update({'name': newCategory});
       final index = _customCategories.indexOf(oldCategory);
       if (index != -1) {
         _customCategories[index] = newCategory;
@@ -57,15 +60,13 @@ class CategoryProvider extends ChangeNotifier {
   Future<void> deleteCategory(String userId, String category) async {
     if (category != fixedCategory) {
       final query = await _firestore
- .collection('category')
+          .collection('category')
           .where('name', isEqualTo: category)
           .get();
 
       if (query.docs.isNotEmpty) {
         final docId = query.docs.first.id;
-        await _firestore
-    .collection('category')
-        .doc(docId).delete();
+        await _firestore.collection('category').doc(docId).delete();
         _customCategories.remove(category);
         notifyListeners();
       }

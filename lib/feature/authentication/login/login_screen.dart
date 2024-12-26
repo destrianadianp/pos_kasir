@@ -36,20 +36,22 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: secondaryColor, automaticallyImplyLeading: false),
+        backgroundColor: secondaryColor,
+        automaticallyImplyLeading: false,
+      ),
       backgroundColor: secondaryColor,
       body: SafeArea(
           child: Form(
               child: SingleChildScrollView(
-        padding: EdgeInsets.all(screenPadding),
+        padding: const EdgeInsets.all(screenPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               "Sign in to your account",
               style: mSemiBold,
             ),
-            SizedBox(
+            const SizedBox(
               height: spacing4,
             ),
             Image.asset('assets/images/img_kasir.png'),
@@ -64,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 return null;
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: spacing1,
             ),
             ValueListenableBuilder(
@@ -82,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                       return null;
                     },
-                    suffixIcon: IconButton(
+                    suffixWidget: IconButton(
                       onPressed: () {
                         _isSeen.value = !_isSeen.value;
                       },
@@ -95,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   );
                 }),
-            SizedBox(
+            const SizedBox(
               height: spacing5,
             ),
             BlocConsumer<AuthenticationBloc, AuthenticationState>(
@@ -114,15 +116,17 @@ class _LoginScreenState extends State<LoginScreen> {
               if (state is AuthenticationSuccessState) {
                 Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => KelolaProdukPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const KelolaProdukPage()),
                     (route) => false);
               } else if (state is AuthenticationFailureState) {
                 showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                          content: Text("Login failed. Please try again"));
-                    });
+                  context: context,
+                  builder: (context) {
+                    return const AlertDialog(
+                        content: Text("Login failed. Please try again"));
+                  },
+                );
               }
             }),
             Row(
@@ -137,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => RegisterScreen()));
+                            builder: (context) => const RegisterScreen()));
                   },
                   child: Text(
                     "Sign Up",

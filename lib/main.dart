@@ -9,35 +9,44 @@ import 'package:pos_kasir/firebase_options.dart';
 import 'package:pos_kasir/provider/category_provider.dart';
 import 'package:pos_kasir/provider/product_provider.dart';
 import 'package:pos_kasir/provider/transaction_provider.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(
+    const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        BlocProvider(create: (context)=>AuthenticationBloc()),
-        ChangeNotifierProvider(create: (_)=>ProductCartProvider()),
-        ChangeNotifierProvider(create: (_)=>CategoryProvider()),
-        ChangeNotifierProvider(create: (_)=>TransactionProvider()),
-
+        BlocProvider(
+          create: (_) => AuthenticationBloc(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProductCartProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CategoryProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => TransactionProvider(),
+        ),
       ],
       child: MaterialApp(
-        home: LoginScreen(),
+        initialRoute: '/login',
         routes: {
-          '/tambah-produk' : (context)=>TambahProduk(),
-          '/liat-produk':(context)=>KelolaProdukPage(),
+          '/login': (context) => const LoginScreen(),
+          '/tambah-produk': (context) => const TambahProduk(),
+          '/liat-produk': (context) => const KelolaProdukPage(),
         },
       ),
     );
